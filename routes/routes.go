@@ -22,6 +22,9 @@ func SetupRoutes(router *gin.Engine) {
 	// user login routes
 	router.POST("/login", handler.UserLogin)
 
+	// user logout routes
+	router.POST("/logout", middleware.AuthMiddleware(), handler.UserLogout)
+
 	// user profile routes
 	router.GET("/profile", middleware.AuthMiddleware(), handler.Userprofile)
 

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"ecommerce/config"
 	"ecommerce/models"
@@ -166,6 +167,64 @@ func UserLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "login success!",
 		"token":   tokenString,
+	})
+}
+
+func UserLogout(c *gin.Context) {
+	// ambil token dari header authorization
+	authHeader := c.GetHeader("Authorization")
+	tokenParts := strings.Split(authHeader, " ")
+	if len(tokenParts) != 2 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Format token salah!",
+		})
+		return
+	}
+	tokenString := tokenParts[1]
+
+	// parse token untuk mendapatkan expiry time
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	})
+	if err != nil || !token.Valid {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Token tidak valid!",
+		})
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Gagal membaca token!",
+		})
+		return
+	}
+
+	// ambil waktu kadaluarsa dari token
+	exp, ok := claims["exp"].(float64)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Token tidak memiliki waktu kadaluarsa!",
+		})
+		return
+	}
+	expiresAt := time.Unix(int64(exp), 0)
+
+	// simpan token ke blacklist
+	blacklistedToken := models.BlacklistedToken{
+		Token:     tokenString,
+		ExpiresAt: expiresAt,
+	}
+	if err := config.DB.Create(&blacklistedToken).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Gagal logout!",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Berhasil logout!",
 	})
 }
 
