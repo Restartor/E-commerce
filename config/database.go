@@ -28,39 +28,16 @@ func ConnectDataBase() {
 		log.Fatal("GAGAL KONEKSI KE DATABASE!", err)
 	}
 
-	// migrasi otomatis untuk model User,
-	err = db.AutoMigrate(&models.User{})
-	if err != nil {
-		log.Fatal("migrate gagal!:", err)
-	}
-	// migrasi otomatis untuk model product
-	err = db.AutoMigrate(&models.Product{})
-	if err != nil {
-		log.Fatal("migrate gagal!:", err)
-	}
-
-	// migrasi otomatis untuk model cart dan cart item
-	err = db.AutoMigrate(&models.Cart{})
-	if err != nil {
-		log.Fatal("migrate gagal:", err)
-	}
-	err = db.AutoMigrate(&models.CartItem{})
-	if err != nil {
-		log.Fatal("migrate gagal!:", err)
-	}
-
-	// migrasi otomatis untuk model order dan order item
-	err = db.AutoMigrate(&models.Order{})
-	if err != nil {
-		log.Fatal("migrate gagal!:", err)
-	}
-	err = db.AutoMigrate(&models.OrderItem{})
-	if err != nil {
-		log.Fatal("migrate gagal!:", err)
-	}
-
-	// migrasi otomatis untuk model blacklisted token (logout)
-	err = db.AutoMigrate(&models.BlacklistedToken{})
+	// migrasi otomatis untuk semua model
+	err = db.AutoMigrate(
+		&models.User{},
+		&models.Product{},
+		&models.Cart{},
+		&models.CartItem{},
+		&models.Order{},
+		&models.OrderItem{},
+		&models.BlacklistedToken{},
+	)
 	if err != nil {
 		log.Fatal("migrate gagal!:", err)
 	}
