@@ -49,12 +49,16 @@ func MidtransNotification(c *gin.Context) {
 		return
 	}
 
-	orderID, _ := payload["order_id"].(string)
-	statusCode, _ := payload["status_code"].(string)
-	grossAmount, _ := payload["gross_amount"].(string)
-	signatureKey, _ := payload["signature_key"].(string)
-	transactionStatus, _ := payload["transaction_status"].(string)
-	paymentType, _ := payload["payment_type"].(string)
+	orderID, err := payload["order_id"].(string)
+	statusCode, err := payload["status_code"].(string)
+	grossAmount, err := payload["gross_amount"].(string)
+	signatureKey, err := payload["signature_key"].(string)
+	transactionStatus, err := payload["transaction_status"].(string)
+	paymentType, err := payload["payment_type"].(string)
+	if !err {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payload!"})
+		return
+	}
 
 	serverKey := os.Getenv("MIDTRANS_SERVER_KEY")
 
